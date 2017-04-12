@@ -53,39 +53,7 @@ for ii = chosenOnes
         % Give the state prior and state after as row and column, and then interpolate all
         % the states that go between them, and count the flux going from all the states there.
 
-        [in]
-
-        if priorLinearInd == currentLinearInd
-            % If there's no transition, do nothing
-            continue
-        % ------------------------------------------------------------ 
-        % First get all the edge cases, if the prior row or column is on the edge of the domain
-        elseif priorRow == 1
-            if currentRow == priorRow + 1 && currentCol == priorCol
-                transitions(priorLinearInd, currentLinearInd) = transition(priorLinearInd, currentLinearInd) + 1;
-            end
-
-        elseif priorRow == nbins
-            if currentRow == priorRow - 1 && currentCol == priorCol
-                transitions(priorLinearInd, currentLinearInd) = transition(priorLinearInd, currentLinearInd) + 1;
-            end
-
-        elseif priorCol == 1
-            if currentCol == priorCol + 1 && currentRow == priorRow
-                transitions(priorLinearInd, currentLinearInd) = transition(priorLinearInd, currentLinearInd) + 1;
-            end
-
-        elseif priorCol == nbins
-            if currentCol == priorCol - 1 && currentRow == priorRow
-                transitions(priorLinearInd, currentLinearInd) = transition(priorLinearInd, currentLinearInd) + 1;
-            end
-        % ------------------------------------------------------------ 
-        % ------------------------------------------------------------ 
-        % Now get the bulk cases where system moves from one state to one of the nearest neighbors
-        elseif currentRow == priorRow 
-
-        % ------------------------------------------------------------ 
-        end % End overall if statement
+        
 
     end
 end
