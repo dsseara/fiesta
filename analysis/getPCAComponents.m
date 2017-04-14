@@ -7,12 +7,12 @@ chosenOnes = [3,4,5,6,7,11,13,15,20,22,25,34,35,42,45,48,49];
 
 pcaData = struct([]);
 
-for jj = chosenOnes
+for jj = 1:numel(chosenOnes)
+    filaID = chosenOnes(jj);
     figure
-    [~,ind] = ismember(jj,chosenOnes);
-    pcaData(ind).filament = num2str(jj);
+    pcaData(jj).filament = num2str(filaID);
 
-    allTheta = Filament(jj).theta;
+    allTheta = Filament(filaID).theta;
     
     nFrames = size(allTheta,2);
     ntheta = cellfun(@numel, allTheta);
@@ -24,17 +24,18 @@ for jj = chosenOnes
         interpedTheta = interp1(1:ntheta(ii), theta, 1: (ntheta(ii)-1)/(mean_size-1) :ntheta(ii));
         matrix(ii,:) = interpedTheta; 
     end
-    pcaData(ind).tangents = matrix;
-    [pcaData(ind).coeff,pcaData(ind).score,pcaData(ind).latent,...
-        pcaData(ind).tsquared,pcaData(ind).explained,pcaData(ind).mu]...
-        = pca(pcaData(ind).tangents);
+    pcaData(jj).tangents = matrix;
 
-    colorline(pcaData(ind).score(:,1), pcaData(ind).score(:,2), 1:nFrames);
-    title(['Filament ', num2str(jj)]);
+    [pcaData(jj).coeff,pcaData(jj).score,pcaData(jj).latent,...
+        pcaData(jj).tsquared,pcaData(jj).explained,pcaData(jj).mu]...
+        = pca(pcaData(jj).tangents);
+
+    colorline(pcaData(jj).score(:,1), pcaData(jj).score(:,2), 1:nFrames);
+    title(['Filament ', num2str(filaID)]);
     xlabel('PCA component 1')
     ylabel('PCA component 2')
 
-    saveas(gcf,['pcaTimeSeries_fil_',num2str(jj)],'fig')
-    saveas(gcf,['pcaTimeSeries_fil_',num2str(jj)],'tif')
-    saveas(gcf,['pcaTimeSeries_fil_',num2str(jj)],'epsc')
+    saveas(gcf,['phaseSpacePlots' filesep 'pca' filesep 'fig' filesep 'pcaTimeSeries_fila_',num2str(filaID)],'fig')
+    saveas(gcf,['phaseSpacePlots' filesep 'pca' filesep 'tif' filesep 'pcaTimeSeries_fila_',num2str(filaID)],'tif')
+    saveas(gcf,['phaseSpacePlots' filesep 'pca' filesep 'eps' filesep 'pcaTimeSeries_fila_',num2str(filaID)],'epsc')
 end
