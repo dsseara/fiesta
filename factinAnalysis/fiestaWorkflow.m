@@ -17,9 +17,11 @@ run rotateFilaments.m
 % Now clean up the filament data and aggregate them
 % First have to set a cutoff for number of segments in the filaments
 % to consider
-
+% Also cd to server first
+cd /run/user/1000/gvfs/'smb-share:server=172.24.21.199,share=storage';
 cutoff = 50;
 run cleanFilamentAngleData.m
+% save 'aggregateData' matrix wherever you want to manually
 
 %%
 % Now, flux analysis performs PCA on the aggregated data
