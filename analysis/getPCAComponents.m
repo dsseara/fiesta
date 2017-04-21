@@ -3,7 +3,10 @@
 % and each column is a point along the arc length.
 
 % Chosen ones for 560_lessthan_0.6tc(20170411T131818268)
-chosenOnes = [3,4,5,6,7,11,13,15,20,22,25,34,35,42,45,48,49];
+%chosenOnes = [3,4,5,6,7,8,11,12,13,15,20,22,25,30,34,36,42,45,48,49,55,62];
+
+% Chosen ones for 560_lessThan0.6tc(20170419T170302783)
+% chosenOnes = [3,8,9,12,13,15,16,17,18,21,22,24,27,28,36,39,40,57,69,73,75,80,115,116,125];
 
 pcaData = struct([]);
 

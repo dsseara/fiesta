@@ -10,14 +10,18 @@ run plotFilaments.m
 %%
 % Now rotate the filaments and plot them along with their angles to
 % get an idea of what's going on
+% Remember to save the new Filaments structure! Adds a new field called
+% "theta" which has all the tangent information
 
 run rotateFilaments.m
 
 %%
-% Now get the elastohydrodynamic mode coefficients.
-% This depends on the function 'elastohydroModes.m'
+% Now clean up the filament data and then perform PCA on the aggregated
+% data. First have to set a cutoff for number of segments in the filaments
+% to consider
 
-run getModeCoeffs.m
+cutoff = 50;
+
 
 %%
 % Now plot and bin the data in a coarse-grained phase space
