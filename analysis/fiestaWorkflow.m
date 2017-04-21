@@ -1,9 +1,7 @@
 % Workflow to analyze FIESTA data
 
 %%
-% First find what fiesta data you want, and call the .mat file name
-% fname. For example:
-% fname = '560_lessthan_0.6tc(20170404T173034436)'
+% First find and load the fiesta data you want
 
 run plotFilaments.m
 
