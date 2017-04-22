@@ -20,7 +20,8 @@ tframe = 5;
 nFrames = 50;
 
 % Collect data on how long the filaments spend in each state
-time = zeros(nbins, nbins);
+time1 = zeros(nbins, nbins);
+time2 = zeros(nbins, nbins);
 
 % place to store all the flux vectors
 meanVector = zeros(nbins, nbins, 2);
@@ -35,8 +36,17 @@ data2 = aggregateData(aggregateData(:,end-1)==2,:);
 filaID2 = unique(data2(:,end));
 score2 = score(aggregateData(:,end-1)==2,:);
 
-pca1Edges = linspace(min(score(:,1)), max(score(:,1)), nbins+1);
-pca2Edges = linspace(min(score(:,2)), max(score(:,2)), nbins+1);
+means = [mean(score(:,1)),mean(score(:,2))];
+stds  = [ std(score(:,1)), std(score(:,2))];
+
+pca1Edges = linspace(means(1)-2*stds(1), means(1)+2*stds(1), nbins+1);
+pca2Edges = linspace(means(2)-2*stds(2), means(2)+2*stds(2), nbins+1);
+
+% Find all the transitions that happen
+% Transitions matrix will be nbins^2 long, so each state in the 2d state
+% is described by its linear index. The transition matrix has elements
+% t(i,j), which is a transition FROM STATE I TO STATE J
+transitions = zeros(nbins^2);
 
 % go through each filament separately for data 1
 for ii = 1:numel(filaID1)
@@ -44,12 +54,6 @@ for ii = 1:numel(filaID1)
     % Get time series for first and second modes
     pca1t = score1(data1(:,end)==filament,1);
     pca2t = score1(data1(:,end)==filament,2);
-
-    % Find all the transitions that happen
-    % Transitions matrix will be nbins^2 long, so each state in the 2d state
-    % is described by its linear index. The transition matrix has elements
-    % t(i,j), which is a transition FROM STATE I TO STATE J
-    transitions = zeros(nbins^2);
 
     for jj = 2:numel(pca1t)
         % Get prior state
@@ -69,8 +73,8 @@ for ii = 1:numel(filaID1)
         % keep track of time spent at each state, divided equally between all the states
         % on the path
         % time between frames is 5 seconds
-        time(sub2ind(size(time), pca1Path, pca2Path)) =...
-            time(sub2ind(size(time), pca1Path, pca2Path)) + tframe/numel(pca1Path);
+        time1(sub2ind(size(time1), pca1Path, pca2Path)) =...
+            time1(sub2ind(size(time1), pca1Path, pca2Path)) + tframe/numel(pca1Path);
 
         % If no transition, move on
         if numel(pca1Path)==1 || numel(pca2Path) ==1
@@ -81,28 +85,6 @@ for ii = 1:numel(filaID1)
             transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end)))...
                 = transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end))) + 1;
         end
-    end
-
-    for state = 1:nbins^2
-        % Recall, transitions is built so that element (i,j) is
-        % the number of transitions from i to j
-        [stateRow,stateCol] = ind2sub([nbins, nbins], state);
-        outFlow = reshape(transitions(state,:), [nbins, nbins]); % from state to all
-        inFlow  = reshape(transitions(:,state), [nbins, nbins]); % from all to state
-        netFlow = inFlow - outFlow;
-        % The flux vector is given by mean of the value of netflow
-        % (positive, negative, or zero) times the distance 
-        distX = (1:nbins) - stateCol;
-        distY = (1:nbins) - stateRow;
-
-        % want to multiply every row by each element in distX
-        vx = mean(mean(netFlow .* repmat(distX',[1,nbins])));
-
-        % want to multiply every col by each element in distY
-        vy = mean(mean(repmat(distY, [nbins,1]) .* netFlow));
-        
-        meanVector(stateRow, stateCol, :,ii) = [vx, vy];
-        
     end
 end
 
@@ -113,12 +95,6 @@ for ii = 1:numel(filaID2)
     pca1t = score2(data2(:,end)==filament,1);
     pca2t = score2(data2(:,end)==filament,2);
 
-    % Find all the transitions that happen
-    % Transitions matrix will be nbins^2 long, so each state in the 2d state
-    % is described by its linear index. The transition matrix has elements
-    % t(i,j), which is a transition FROM STATE I TO STATE J
-    transitions = zeros(nbins^2);
-
     for jj = 2:numel(pca1t)
         % Get prior state
         pca1P = pca1t(jj-1);
@@ -137,8 +113,8 @@ for ii = 1:numel(filaID2)
         % keep track of time spent at each state, divided equally between all the states
         % on the path
         % time between frames is 5 seconds
-        time(sub2ind(size(time), pca1Path, pca2Path)) =...
-            time(sub2ind(size(time), pca1Path, pca2Path)) + tframe/numel(pca1Path);
+        time2(sub2ind(size(time2), pca1Path, pca2Path)) =...
+            time2(sub2ind(size(time2), pca1Path, pca2Path)) + tframe/numel(pca1Path);
 
         % If no transition, move on
         if numel(pca1Path)==1 || numel(pca2Path) ==1
@@ -150,28 +126,29 @@ for ii = 1:numel(filaID2)
                 = transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end))) + 1;
         end
     end
+end
 
-    for state = 1:nbins^2
-        % Recall, transitions is built so that element (i,j) is
-        % the number of transitions from i to j
-        [stateRow,stateCol] = ind2sub([nbins, nbins], state);
-        outFlow = reshape(transitions(state,:), [nbins, nbins]); % from state to all
-        inFlow  = reshape(transitions(:,state), [nbins, nbins]); % from all to state
-        netFlow = inFlow - outFlow;
-        % The flux vector is given by mean of the value of netflow
-        % (positive, negative, or zero) times the distance 
-        distX = (1:nbins) - stateCol;
-        distY = (1:nbins) - stateRow;
+time = (time1 + time2);
 
-        % want to multiply every row by each element in distX
-        vx = mean(mean(netFlow .* repmat(distX',[1,nbins])));
+for state = 1:nbins^2
+    % Recall, transitions is built so that element (i,j) is
+    % the number of transitions from i to j
+    [stateRow,stateCol] = ind2sub([nbins, nbins], state);
+    outFlow = reshape(transitions(state,:), [nbins, nbins]); % from state to all
+    inFlow  = reshape(transitions(:,state), [nbins, nbins]); % from all to state
+    netFlow = inFlow - outFlow;
+    % The flux vector is given by mean of the value of netflow
+    % (positive, negative, or zero) times the distance 
+    distX = (1:nbins) - stateCol;
+    distY = (1:nbins) - stateRow;
 
-        % want to multiply every col by each element in distY
-        vy = mean(mean(repmat(distY, [nbins,1]) .* netFlow));
-        
-        meanVector(stateRow, stateCol, :,ii) = [vx, vy];
-        
-    end
+    % want to multiply every row by each element in distX
+    vx = mean(mean(netFlow .* repmat(distX',[1,nbins])));
+
+    % want to multiply every col by each element in distY
+    vy = mean(mean(repmat(distY, [nbins,1]) .* netFlow));
+    
+    meanVector(stateRow, stateCol, :) = [vx, vy];
 end
 
 % Plot the vectors over the phase space
@@ -181,12 +158,12 @@ ylim([pca2Edges(1), pca2Edges(end)])
 % shift the edges a bit so that they are in the center of the bins
 binCenters = [pca1Edges(1:end-1) + diff(pca1Edges)/2; pca2Edges(1:end-1)+diff(pca2Edges)/2];
 % full time of experiment is tFrame*nFrames
-pcolor(binCenters(1,:), binCenters(2,:), time(:,:,ii)./250) 
+pcolor(binCenters(1,:), binCenters(2,:), time(:,:)./(tframe*size(score,1))); 
 % shading interp
 colorbar
-quiver(pca1Edges(2:end), pca2Edges(2:end), meanVector(:,:,1,ii), meanVector(:,:,2,ii), 1.5, 'w', 'LineWidth', 1.5 )
+quiver(pca1Edges(2:end), pca2Edges(2:end), meanVector(:,:,1), meanVector(:,:,2), 'w', 'LineWidth', 1.5 )
 
-title(['Filament ', num2str(filaID)]);
+title('Filament phase space');
 xlabel('PCA component 1')
 ylabel('PCA component 2')
 
