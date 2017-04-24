@@ -13,7 +13,7 @@
 [coeff,score,latent,tsquared,explained,mu]=...
     pca(aggregateData, 'NumComponents', 3);
 
-nbins = 100;
+nbins = 25;
 nbinx = nbins;
 nbiny = nbins;
 
@@ -51,9 +51,6 @@ maxEdge2 = means(2)+2*stds(2);
 pca1Edges = [-Inf, minEdge1:(maxEdge1 - minEdge1)/(nbins-3):maxEdge1,Inf];
 pca2Edges = [-Inf, minEdge2:(maxEdge2 - minEdge2)/(nbins-3):maxEdge2,Inf];
 
-%pca1Edges = linspace(min(score(:,1)), max(score(:,1)), nbins+1);
-%pca2Edges = linspace(min(score(:,2)), max(score(:,2)), nbins+1);
-
 % Find all the transitions that happen
 % Transitions matrix will be nbins^2 long, so each state in the 2d state
 % is described by its linear index. The transition matrix has elements
@@ -61,7 +58,7 @@ pca2Edges = [-Inf, minEdge2:(maxEdge2 - minEdge2)/(nbins-3):maxEdge2,Inf];
 transitions = zeros(nbins*nbins);
 
 % go through each filament separately for data 1 (location given above)
-for ii = 2%1:numel(filaID1)
+for ii = 1:numel(filaID1)
     filament = filaID1(ii);
     % Get time series for first and second modes
     pca1t = score1(data1(:,end)==filament,1);
@@ -84,59 +81,57 @@ for ii = 2%1:numel(filaID1)
         [pca1Path, pca2Path] = bresenham(pRow,pCol, cRow, cCol);
         % keep track of time spent at each state, divided equally between all the states
         % on the path. Time between frames is 5 seconds
-        time1(sub2ind(size(time1), pca1Path, pca2Path)) =...
-            time1(sub2ind(size(time1), pca1Path, pca2Path)) + tframe/numel(pca1Path);
+        inds = sub2ind([nbins, nbins],pca2Path, pca1Path);
+        time1(inds) = time1(inds) + tframe/numel(pca1Path);
 
         % If no transition, move on
         if numel(pca1Path)==1 || numel(pca2Path) ==1
             continue
         else
             % turn path coordinates into linear indices to put into transition matrix
-            linearInd = sub2ind([nbins nbins], pca1Path, pca2Path);
-            transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end)))...
-                = transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end))) + 1;
+            transitions(sub2ind(size(transitions), inds(1:end-1), inds(2:end)))...
+                = transitions(sub2ind(size(transitions), inds(1:end-1), inds(2:end))) + 1;
         end
     end
 end
 
-% % go through each filament separately for data 2 (location given above)
-% for ii = 1:numel(filaID2)
-%     filament = filaID2(ii);
-%     % Get time series for first and second modes
-%     pca1t = score2(data2(:,end)==filament,1);
-%     pca2t = score2(data2(:,end)==filament,2);
+% go through each filament separately for data 2 (location given above)
+for ii = 1:numel(filaID2)
+    filament = filaID2(ii);
+    % Get time series for first and second modes
+    pca1t = score2(data2(:,end)==filament,1);
+    pca2t = score2(data2(:,end)==filament,2);
 
-%     for jj = 2:numel(pca1t)
-%         % Get prior state
-%         pca1P = pca1t(jj-1);
-%         pca2P = pca2t(jj-1);
-%         priorState   = histcounts2(pca1P, pca2P, pca1Edges, pca2Edges);
-%         [pRow, pCol] = find(priorState);
+    for jj = 2:numel(pca1t)
+        % Get prior state
+        pca1P = pca1t(jj-1);
+        pca2P = pca2t(jj-1);
+        priorState   = histcounts2(pca1P, pca2P, pca1Edges, pca2Edges);
+        [pRow, pCol] = find(priorState);
         
-%         % Get current state
-%         pca1C = pca1t(jj);
-%         pca2C = pca2t(jj);
-%         currentState = histcounts2(pca1C, pca2C, pca1Edges, pca2Edges);
-%         [cRow, cCol] = find(currentState);
+        % Get current state
+        pca1C = pca1t(jj);
+        pca2C = pca2t(jj);
+        currentState = histcounts2(pca1C, pca2C, pca1Edges, pca2Edges);
+        [cRow, cCol] = find(currentState);
 
-%         % Get all points traversed in phase space using Bresenham algorithm
-%         [pca1Path, pca2Path] = bresenham(pRow,pCol, cRow, cCol);
-%         % keep track of time spent at each state, divided equally between all the states
-%         % on the path. Time between frames is 5 seconds
-%         time2(sub2ind(size(time2), pca1Path, pca2Path)) =...
-%             time2(sub2ind(size(time2), pca1Path, pca2Path)) + tframe/numel(pca1Path);
+        % Get all points traversed in phase space using Bresenham algorithm
+        [pca1Path, pca2Path] = bresenham(pRow,pCol, cRow, cCol);
+        % keep track of time spent at each state, divided equally between all the states
+        % on the path. Time between frames is 5 seconds
+        inds = sub2ind([nbins, nbins],pca2Path, pca1Path);
+        time2(inds) = time2(inds) + tframe/numel(pca1Path);
 
-%         % If no transition, move on
-%         if numel(pca1Path)==1 || numel(pca2Path) ==1
-%             continue
-%         else
-%             % turn path coordinates into linear indices to put into transition matrix
-%             linearInd = sub2ind([nbins nbins], pca1Path, pca2Path);
-%             transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end)))...
-%                 = transitions(sub2ind(size(transitions), linearInd(1:end-1), linearInd(2:end))) + 1;
-%         end
-%     end
-% end
+        % If no transition, move on
+        if numel(pca1Path)==1 || numel(pca2Path) ==1
+            continue
+        else
+            % turn path coordinates into linear indices to put into transition matrix
+            transitions(sub2ind(size(transitions), inds(1:end-1), inds(2:end)))...
+                = transitions(sub2ind(size(transitions), inds(1:end-1), inds(2:end))) + 1;
+        end
+    end
+end
 
 time = (time1 + time2);
 
@@ -234,7 +229,7 @@ pcolor(pca1Edges,pca2Edges, time./(tframe*size(score,1)));
 % shading interp
 colorbar
 %quiver(pca1Edges(2:end), pca2Edges(2:end), fluxField(:,:,1), fluxField(:,:,2), 'w', 'LineWidth', 1.5 )
-quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2), 'w', 'LineWidth', 1.5 )
+quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2),0.5, 'w', 'LineWidth', 1.5 )
 title('Filament phase space');
 xlabel('PCA component 1')
 ylabel('PCA component 2')
