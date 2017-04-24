@@ -40,10 +40,10 @@ score2 = score(aggregateData(:,end-1)==2,:);
 means = [mean(score(:,1)),mean(score(:,2))];
 stds  = [ std(score(:,1)), std(score(:,2))];
 
-minEdge1 = means(1)-3*stds(1);
-maxEdge1 = means(1)+3*stds(1);
-minEdge2 = means(2)-3*stds(2);
-maxEdge2 = means(2)+3*stds(2);
+minEdge1 = means(1)-2*stds(1);
+maxEdge1 = means(1)+2*stds(1);
+minEdge2 = means(2)-2*stds(2);
+maxEdge2 = means(2)+2*stds(2);
 
 % Use the +-Inf to catch outliers that lay outside mu +- 3*sigma
 pca1Edges = [-Inf, minEdge1:(maxEdge1 - minEdge1)/(nbins-3):maxEdge1,Inf];
@@ -224,11 +224,10 @@ binCenters = [pca1Edges(1:end-1) + diff(pca1Edges)/2; pca2Edges(1:end-1)+diff(pc
 % full time of experiment is tFrame*nFrames
 % pcolor(binCenters(1,:), binCenters(2,:), time(:,:)./(tframe*size(score,1))); 
 pcolor(pca1Edges,pca2Edges, time./(tframe*size(score,1)));
-axis square;
 % shading interp
 colorbar
 %quiver(pca1Edges(2:end), pca2Edges(2:end), fluxField(:,:,1), fluxField(:,:,2), 'w', 'LineWidth', 1.5 )
-quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2), 'w', 'LineWidth', 1.5 )
+quiver(pca1Edges(2:end-1)+(dx./2), pca2Edges(2:end-1)+(dy./2), fluxField(2:end-1,2:end-1,1), fluxField(2:end-1,2:end-1,2), 'w', 'LineWidth', 1.5 )
 title('Filament phase space');
 xlabel('PCA component 1')
 ylabel('PCA component 2')
