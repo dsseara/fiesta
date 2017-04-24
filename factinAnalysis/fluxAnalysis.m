@@ -81,7 +81,7 @@ for ii = 1:numel(filaID1)
         [pca1Path, pca2Path] = bresenham(pRow,pCol, cRow, cCol);
         % keep track of time spent at each state, divided equally between all the states
         % on the path. Time between frames is 5 seconds
-        inds = sub2ind([nbins, nbins],pca2Path, pca1Path);
+        inds = sub2ind([nbins, nbins],pca2Path, pca1Path); %this part was tricky, switch order of path
         time1(inds) = time1(inds) + tframe/numel(pca1Path);
 
         % If no transition, move on
@@ -119,7 +119,7 @@ for ii = 1:numel(filaID2)
         [pca1Path, pca2Path] = bresenham(pRow,pCol, cRow, cCol);
         % keep track of time spent at each state, divided equally between all the states
         % on the path. Time between frames is 5 seconds
-        inds = sub2ind([nbins, nbins],pca2Path, pca1Path);
+        inds = sub2ind([nbins, nbins],pca2Path, pca1Path); %this part was tricky, switch order of path
         time2(inds) = time2(inds) + tframe/numel(pca1Path);
 
         % If no transition, move on
@@ -186,27 +186,7 @@ for state = 1:nbins^2
         localFlow = netFlow(stateRow-1:stateRow,stateCol-1:stateCol);
         flowVec = 1/2.*[trace(localFlow*xFluxMat(1:2,1:2)), trace(localFlow*yFluxMat(1:2,1:2))];
     end
-    % if isempty(find(localFlow,1))
-    %     flux = [0, 0];
-    % else
-    %     [row,col,val] = find(localFlow);
-    %     flux = [(col-stateCol),(row-stateRow)].*val;
-    % end
-    % The flux vector is given by mean of the value of netflow
-    % (positive, negative, or zero) times the distance 
-    % distX = (1:nbins) - stateCol;
-    % distY = (1:nbins) - stateRow;
 
-    % % want to multiply every row by each element in distX
-    % vx = mean(mean(netFlow .* repmat(distX',[1,nbins])));
-
-    % % want to multiply every col by each element in distY
-    % vy = mean(mean(repmat(distY, [nbins,1]) .* netFlow));
-    % if ~isempty(find(netFlow,1))
-    %     keyboard
-    % end
-    % vx = mean(sum(netFlow,2));
-    % vy = mean(sum(netFlow,1));
     if ~isempty(find(flowVec,1))
     	%keyboard
 	    fluxField(stateRow, stateCol, :) = flowVec./time(stateRow,stateCol);
@@ -221,14 +201,10 @@ dx = pca1Edges(3)-pca1Edges(2);
 dy = pca2Edges(3)-pca2Edges(2);
 xlim([pca1Edges(1), pca1Edges(end)])
 ylim([pca2Edges(1), pca2Edges(end)])
-% shift the edges a bit so that they are in the center of the bins
-binCenters = [pca1Edges(1:end-1) + diff(pca1Edges)/2; pca2Edges(1:end-1)+diff(pca2Edges)/2];
-% full time of experiment is tFrame*nFrames
-% pcolor(binCenters(1,:), binCenters(2,:), time(:,:)./(tframe*size(score,1))); 
+
 pcolor(pca1Edges,pca2Edges, time./(tframe*size(score,1)));
 % shading interp
 colorbar
-%quiver(pca1Edges(2:end), pca2Edges(2:end), fluxField(:,:,1), fluxField(:,:,2), 'w', 'LineWidth', 1.5 )
 quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2),0.5, 'w', 'LineWidth', 1.5 )
 title('Filament phase space');
 xlabel('PCA component 1')
