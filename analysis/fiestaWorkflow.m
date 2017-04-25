@@ -12,10 +12,8 @@ run plotFilaments.m
 run rotateFilaments.m
 
 %%
-% Now get the elastohydrodynamic mode coefficients.
-% This depends on the function 'elastohydroModes.m'
-
-run getModeCoeffs.m
+% Get the pca components
+run getPCAComponents.m
 
 %%
 % Now plot and bin the data in a coarse-grained phase space

@@ -35,8 +35,8 @@ for jj = 1:nFrames
 end
 title('Objects');
 saveas(gcf, ['fig' filesep 'objects'], 'fig');
-saveas(gcf, ['tif' filesep 'objects'], 'tif');
-saveas(gcf, ['eps' filesep 'objects'], 'epsc');
+% saveas(gcf, ['tif' filesep 'objects'], 'tif');
+% saveas(gcf, ['eps' filesep 'objects'], 'epsc');
 
 
 % This plots individual filaments separately
@@ -60,7 +60,7 @@ for jj = 1:nFila
             plot(filaData(:,1)./1000,filaData(:,2)./1000, 'Color', colors(ii,:));
         end
         saveas(gcf,['fig' filesep 'filament_',num2str(jj)],'fig')
-        saveas(gcf,['tif' filesep 'filament_',num2str(jj)],'tif')
-        saveas(gcf,['eps' filesep 'filament_',num2str(jj)],'epsc')
+        % saveas(gcf,['tif' filesep 'filament_',num2str(jj)],'tif')
+        % saveas(gcf,['eps' filesep 'filament_',num2str(jj)],'epsc')
     end
 end
