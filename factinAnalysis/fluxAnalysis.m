@@ -13,6 +13,9 @@
 [coeff,score,latent,tsquared,explained,mu]=...
     pca(aggregateData, 'NumComponents', 3);
 
+component1 = 2;
+component2 = 3;
+
 nbins = 25;
 nbinx = nbins;
 nbiny = nbins;
@@ -24,6 +27,7 @@ nFrames = 50;
 % Collect data on how long the filaments spend in each state
 time1 = zeros(nbins, nbins);
 time2 = zeros(nbins, nbins);
+time = zeros(nbins,nbins);
 
 % place to store all the flux vectors
 fluxField = zeros(nbins, nbins, 2);
@@ -39,8 +43,8 @@ filaID2 = unique(data2(:,end));
 score2 = score(aggregateData(:,end-1)==2,:);
 
 % Cut histogram off by mean and std in each direction
-means = [mean(score(:,1)),mean(score(:,2))];
-stds  = [ std(score(:,1)), std(score(:,2))];
+means = [mean(score(:,component1)),mean(score(:,component2))];
+stds  = [ std(score(:,component1)), std(score(:,component2))];
 
 minEdge1 = means(1)-2*stds(1);
 maxEdge1 = means(1)+2*stds(1);
@@ -61,8 +65,8 @@ transitions = zeros(nbins*nbins);
 for ii = 1:numel(filaID1)
     filament = filaID1(ii);
     % Get time series for first and second modes
-    pca1t = score1(data1(:,end)==filament,1);
-    pca2t = score1(data1(:,end)==filament,2);
+    pca1t = score1(data1(:,end)==filament,component1);
+    pca2t = score1(data1(:,end)==filament,component2);
 
     for jj = 2:numel(pca1t)
         % Get prior state
@@ -82,7 +86,7 @@ for ii = 1:numel(filaID1)
         % keep track of time spent at each state, divided equally between all the states
         % on the path. Time between frames is 5 seconds
         inds = sub2ind([nbins, nbins],pca2Path, pca1Path); %this part was tricky, switch order of path
-        time1(inds) = time1(inds) + tframe/numel(pca1Path);
+        time(inds) = time(inds) + tframe/numel(pca1Path);
 
         % If no transition, move on
         if numel(pca1Path)==1 || numel(pca2Path) ==1
@@ -99,8 +103,8 @@ end
 for ii = 1:numel(filaID2)
     filament = filaID2(ii);
     % Get time series for first and second modes
-    pca1t = score2(data2(:,end)==filament,1);
-    pca2t = score2(data2(:,end)==filament,2);
+    pca1t = score2(data2(:,end)==filament,component1);
+    pca2t = score2(data2(:,end)==filament,component2);
 
     for jj = 2:numel(pca1t)
         % Get prior state
@@ -120,7 +124,7 @@ for ii = 1:numel(filaID2)
         % keep track of time spent at each state, divided equally between all the states
         % on the path. Time between frames is 5 seconds
         inds = sub2ind([nbins, nbins],pca2Path, pca1Path); %this part was tricky, switch order of path
-        time2(inds) = time2(inds) + tframe/numel(pca1Path);
+        time(inds) = time(inds) + tframe/numel(pca1Path);
 
         % If no transition, move on
         if numel(pca1Path)==1 || numel(pca2Path) ==1
@@ -133,7 +137,7 @@ for ii = 1:numel(filaID2)
     end
 end
 
-time = (time1 + time2);
+%time = (time1 + time2);
 
 % This matrix can be multiplied against the localFlow matrix, then take
 % the trace, and you have the x-component of the flux
@@ -189,7 +193,7 @@ for state = 1:nbins^2
 
     if ~isempty(find(flowVec,1))
     	%keyboard
-	    fluxField(stateRow, stateCol, :) = flowVec./time(stateRow,stateCol);
+	    fluxField(stateRow, stateCol, :) = flowVec;%./time(stateRow,stateCol);
 	else
 		fluxField(stateRow, stateCol, :) = flowVec;
 	end
@@ -202,13 +206,13 @@ dy = pca2Edges(3)-pca2Edges(2);
 xlim([pca1Edges(1), pca1Edges(end)])
 ylim([pca2Edges(1), pca2Edges(end)])
 
-pcolor(pca1Edges,pca2Edges, time./(tframe*size(score,1)));
+pcolor(pca1Edges,pca2Edges,time./(tframe*size(score,1)) );
 % shading interp
 colorbar
-quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2),0.5, 'w', 'LineWidth', 1.5 )
+q = quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2),0.125,'w');
 title('Filament phase space');
-xlabel('PCA component 1')
-ylabel('PCA component 2')
+xlabel(['PCA component ', num2str(component1)])
+ylabel(['PCA component ', num2str(component2)])
 
 % saveas(gcf,['phaseSpacePlots' filesep 'pca' filesep 'fig' filesep 'fluxMap_fila_',num2str(filaID)],'fig')
 % saveas(gcf,['phaseSpacePlots' filesep 'pca' filesep 'tif' filesep 'fluxMap_fila_',num2str(filaID)],'tif')

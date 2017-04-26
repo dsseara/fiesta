@@ -3,7 +3,10 @@
 %chosenOnes = [3,4,7,32];%,43,39];
 
 % Chosen ones for 560_lessthan_0.6tc(20170411T131818268)
-chosenOnes = [49, 48, 45, 42, 34, 25, 20, 13, 11, 7, 6, 5, 4, 35, 22, 15, 3];
+%chosenOnes = [49, 48, 45, 42, 34, 25, 20, 13, 11, 7, 6, 5, 4, 35, 22, 15, 3];
+
+% Chosen ones for 560(20170425T191553204)
+chosenOnes = [7, 9, 10, 16, 21, 28, 32, 34, 36, 40, 41, 44, 51, 52, 61, 63, 67, 70, 73, 83, 94, 101, 107, 118];
 
 N = numel(Filament);
 
@@ -53,18 +56,18 @@ for jj = 1:N
 
     end
 
-    subplot(1,2,1);
+    subplot(2,1,1);
     xlabel('x (nm)')
     ylabel('y (nm)')
     title(['Rotated and anchored filament ', num2str(jj)])
-    subplot(1,2,2);
+    subplot(2,1,2);
     xlabel('s(nm)')
     ylabel('\theta')
     title(['\theta(s) of filament ', num2str(jj)])
-    % if ismember(jj,chosenOnes)
-    %     saveas(gcf,['filament', num2str(jj),'_angleInfo'],'fig')
-    %     saveas(gcf,['filament', num2str(jj),'_angleInfo'],'tif')
-    %     saveas(gcf,['filament', num2str(jj),'_angleInfo'],'epsc')
-    % end
+    if ismember(jj,chosenOnes)
+        saveas(gcf,['~/Desktop/angleInfo/fig' filesep 'filament', num2str(jj),'_angleInfo'],'fig')
+        saveas(gcf,['~/Desktop/angleInfo/tif' filesep 'filament', num2str(jj),'_angleInfo'],'tif')
+        saveas(gcf,['~/Desktop/angleInfo/eps' filesep 'filament', num2str(jj),'_angleInfo'],'epsc')
+    end
 end
 
