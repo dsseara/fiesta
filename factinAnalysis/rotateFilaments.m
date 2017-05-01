@@ -6,7 +6,7 @@
 %chosenOnes = [49, 48, 45, 42, 34, 25, 20, 13, 11, 7, 6, 5, 4, 35, 22, 15, 3];
 
 % Chosen ones for 560(20170425T191553204)
-chosenOnes = [7, 9, 10, 16, 21, 28, 32, 34, 36, 40, 41, 44, 51, 52, 61, 63, 67, 70, 73, 83, 94, 101, 107, 118];
+% chosenOnes = [7, 9, 10, 16, 21, 28, 32, 34, 36, 40, 41, 44, 51, 52, 61, 63, 67, 70, 73, 83, 94, 101, 107, 118];
 
 N = numel(Filament);
 
@@ -64,10 +64,10 @@ for jj = 1:N
     xlabel('s(nm)')
     ylabel('\theta')
     title(['\theta(s) of filament ', num2str(jj)])
-    if ismember(jj,chosenOnes)
-        saveas(gcf,['~/Desktop/angleInfo/fig' filesep 'filament', num2str(jj),'_angleInfo'],'fig')
-        saveas(gcf,['~/Desktop/angleInfo/tif' filesep 'filament', num2str(jj),'_angleInfo'],'tif')
-        saveas(gcf,['~/Desktop/angleInfo/eps' filesep 'filament', num2str(jj),'_angleInfo'],'epsc')
-    end
+%     if ismember(jj,chosenOnes)
+%         saveas(gcf,['~/Desktop/angleInfo/fig' filesep 'filament', num2str(jj),'_angleInfo'],'fig')
+%         saveas(gcf,['~/Desktop/angleInfo/tif' filesep 'filament', num2str(jj),'_angleInfo'],'tif')
+%         saveas(gcf,['~/Desktop/angleInfo/eps' filesep 'filament', num2str(jj),'_angleInfo'],'epsc')
+%     end
 end
 

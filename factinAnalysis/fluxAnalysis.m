@@ -13,8 +13,8 @@
 [coeff,score,latent,tsquared,explained,mu]=...
     pca(aggregateData, 'NumComponents', 3);
 
-component1 = 2;
-component2 = 3;
+component1 = 1;
+component2 = 2;
 
 nbins = 25;
 nbinx = nbins;
@@ -199,6 +199,7 @@ for state = 1:nbins^2
 	end
 end
 
+
 % Plot the vectors over the phase space
 figure, hold on
 dx = pca1Edges(3)-pca1Edges(2);
@@ -209,8 +210,12 @@ ylim([pca2Edges(1), pca2Edges(end)])
 pcolor(pca1Edges,pca2Edges,time./(tframe*size(score,1)) );
 % shading interp
 colorbar
+
+% Get curl data
+totalCurl = sum(sum(curl(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2))))*dx*dy;
+
 q = quiver(pca1Edges+(dx./2), pca2Edges+(dy./2), fluxField(:,:,1), fluxField(:,:,2),0.125,'w');
-title('Filament phase space');
+title(['Filament phase space, total curl = ', num2str(totalCurl)]);
 xlabel(['PCA component ', num2str(component1)])
 ylabel(['PCA component ', num2str(component2)])
 

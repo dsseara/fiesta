@@ -64,14 +64,12 @@ for i = 1:length(correspondance(:,1))
     if correspondance(i,4) < rg_cutoff(2) && correspondance(i,4)>rg_cutoff(1)
         if isempty(tc)
             bsecx=(bsec(:,1)-bsec(1,1));
-            meanDX = mean(diff(bsecx));
-            dx = diff(bsecx) - meanDX;
+            x = bsecx - mean(bsecx);
             
             bsecy=(bsec(:,2)-bsec(1,2));
-            meanDY = mean(diff(bsecy));
-            dy = diff(bsecy) - meanDY;
+            y = bsecy - mean(bsecy);
 
-            [probMap, fluxField, xEdges, yEdges] = probabilityFlux([dx, dy], dt, nbins, []);
+            [probMap, fluxField, xEdges, yEdges] = probabilityFlux([x, y], dt, nbins, []);
         else
             %%% Pre tc %%%
             pre  = bsec(bsec(:,3)<tc+1,:);
@@ -85,17 +83,15 @@ for i = 1:length(correspondance(:,1))
             end
 
             pre_bsecx=(pre(:,1)-pre(1,1));
-            pre_meanDX = mean(diff(pre_bsecx));
-            pre_dx = diff(pre_bsecx) - pre_meanDX;
+            pre_x = pre_bsecx - mean(pre_bsecx);
             
             pre_bsecy=(pre(:,2)-pre(1,2));
-            pre_meanDY = mean(diff(pre_bsecy));
-            pre_dy = diff(pre_bsecy) - pre_meanDY;
+            pre_y = pre_bsecy - mean(pre_bsecy);
 
-            [probMap.pre, fluxField.pre,xEdges.pre, yEdges.pre] = probabilityFlux([pre_dx, pre_dy], dt, nbins, []);
+            [probMap.pre, fluxField.pre,xEdges.pre, yEdges.pre] = probabilityFlux([pre_x, pre_y], dt, nbins, []);
 
             %%% Post tc %%%
-            post  = bsec(bsec(:,3)<tc+1,:);
+            post  = bsec(bsec(:,3)>tc,:);
             
             if isempty(post)
                 % msdx.post = 0;
@@ -106,14 +102,12 @@ for i = 1:length(correspondance(:,1))
             end
 
             post_bsecx=(post(:,1)-post(1,1));
-            post_meanDX = mean(diff(post_bsecx));
-            post_dx = diff(post_bsecx) - post_meanDX;
+            post_x = post_bsecx - mean(post_bsecx);
             
             post_bsecy=(post(:,2)-post(1,2));
-            post_meanDY = mean(diff(post_bsecy));
-            post_dy = diff(post_bsecy) - post_meanDY;
+            post_y = post_bsecy - mean(post_bsecy);
 
-            [probMap.post, fluxField.post, xEdges.pre, yEdges.post] = probabilityFlux([post_dx, post_dy], dt, nbins, []);
+            [probMap.post, fluxField.post,xEdges.post, yEdges.post] = probabilityFlux([post_x, post_y], dt, nbins, []);
         end
     end
     if mod(i,50) == 0

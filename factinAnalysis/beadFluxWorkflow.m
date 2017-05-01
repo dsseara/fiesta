@@ -5,7 +5,7 @@ clear, close all;
 path = '/Volumes/Storage/Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/adding6pt2ulunspunskmuscmyo_5s/msd/';
 nbins = 25;
 dt = 5;
-rg_cutoff = [0,Inf];
+rg_cutoff = [0,Inf]; % radius of gyration cutoffs (essentially none with [0,Inf])
 tc = 50; % only look at time < 2/3 tc for now
 
 

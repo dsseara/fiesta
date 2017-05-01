@@ -34,7 +34,7 @@ aggregateData = [];
 
 % % First have to cd to the server
 % load('Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/adding6pt2ulunspunskmuscmyo_5s/560/gaussSmoothed_2px/560_lessthan_0.6tc(20170411T131818268)/560_lessthan_0.6tc(20170411T131818268).mat');
-
+% 
 % for ii = filaList{1}
 % 	thetas = Filament(ii).theta;
 % 	thetas = thetas(cellfun(@(x) size(x,2)>cutoff,thetas));
@@ -42,9 +42,9 @@ aggregateData = [];
 % 		aggregateData = [aggregateData; [thetas{jj}(1:cutoff),1, ii]];
 % 	end
 % end
-
+% 
 % load('Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink/adding6pt2ulunspunskmuscmyo_5s/560/gaussSmoothed_2px/560_lessThan0.6tc(20170419T170302783)/560_lessThan0.6tc(20170419T170302783).mat');
-
+% 
 % for ii = filaList{2}
 % 	thetas = Filament(ii).theta;
 % 	thetas = thetas(cellfun(@(x) size(x,2)>cutoff,thetas));
