@@ -1,4 +1,4 @@
-% function [probMap, fluxField] = probabilityFluxLoop(x,y)
+% function [probMap, fluxField] = probabilityFlux(tseries,dt,dx,cutoff)
 %
 % This function takes a 2D time series and calculates the probability
 % flux of the time series moving through the 2D space. Inspired by
@@ -6,9 +6,8 @@
 %
 % INPUTS:     tseries - Nx2 matrix, each column is a time series in 
 %                       one variable
-%               nbins - Either an integer umber of bins in both directions,
-%                       or a 1x2 array with nbins in x and y direction
 %                  dt - time interval between each row of data in tseries
+%                dbin - Size of bins (in um), equal in both directions
 %              cutoff - (optional), if passed, an integer number of standard
 %                       deviations out to which the bins go. Pass [] to just use
 %                       max and min of data given.
@@ -20,22 +19,7 @@
 %                       of the time averaged flux vector field
 %
 % Created by Daniel Seara at 2017/04/25 10:29
-function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, nbins, cutoff)
-    
-    switch numel(nbins)
-    case 1
-        nbinx = nbins;
-        nbiny = nbins;
-    case 2
-        nbinx = nbins(1);
-        nbiny = nbins(2);
-    end
-
-    % Find all the transitions that happens. Transitions matrix
-    % will be (nbiny)(nbinx) long, so each state in the 2d state
-    % is described by its linear index. The transition matrix has elements
-    % t(i,j), which is a transition FROM STATE I TO STATE J
-    transitions = zeros(nbinx*nbiny);
+function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, dbin, cutoff)
 
     if size(tseries,1)<size(tseries,2)
         % make sure data entered in right orientation
@@ -44,8 +28,6 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, nbins
 
     n = size(tseries,1); % total number of time points
     totalTime = dt*n;
-    probMap = zeros(nbiny,nbinx);
-    fluxField = zeros(nbiny, nbinx, 2);
 
     if ~isempty(cutoff)
         means = [mean(tseries(:,1)),mean(tseries(:,2))];
@@ -57,17 +39,31 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, nbins
         maxY = means(2)+cutoff*stds(2);
 
         % Use the +-Inf to catch outliers that lay outside mu +- cutoff*sigma
-        xEdges = [-Inf, minX:(maxX - minX)/(nbinx-2):maxX,Inf];
-        yEdges = [-Inf, minY:(maxY - minY)/(nbiny-2):maxY,Inf];
+        xEdges = [-Inf, minX:dbin:maxX, Inf];
+        yEdges = [-Inf, minY:dbin:maxY, Inf];
     else
         minX = min(tseries(:,1));
         maxX = max(tseries(:,1));
         minY = min(tseries(:,2));
         maxY = max(tseries(:,2));
 
-        xEdges = (minX:(maxX-minX)/(nbinx):maxX);
-        yEdges = (minY:(maxY-minY)/(nbiny):maxY);
+        xEdges = [minX:dbin:maxX+dbin]; % add dbin to end to make sure last edge
+        yEdges = [minY:dbin:maxY+dbin]; % is past the max value
     end
+    nbinx = numel(xEdges)-1;
+    nbiny = numel(yEdges)-1;
+    
+    % Find all the transitions that happen
+    % Transitions matrix will be nbins^2 long, so each state in the 2d state
+    % is described by its linear index. The transition matrix has elements
+    % t(i,j), which is a transition FROM STATE I TO STATE J
+
+    transitions = zeros(nbinx*nbiny);
+
+    % Initialize memory for outputs
+    probMap = zeros(nbiny,nbinx);
+    fluxField = zeros(nbiny, nbinx, 2);
+
 
     for jj = 2:n
         % Get prior state
@@ -105,11 +101,11 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, nbins
 
     % This matrix can be multiplied against a local 3x3 matrix , then take
     % the trace, and you have the x-component of the flux
-    xFluxMat = [-1/sqrt(2), -1, -1/sqrt(2); 0,0,0;1/sqrt(2), 1, 1/sqrt(2)];
+    xFluxMat = [-1/sqrt(2), -1, -1/sqrt(2); 0,0,0; 1/sqrt(2), 1, 1/sqrt(2)];
     % Same for y component, call upwards the positive direction
     yFluxMat = -xFluxMat';
 
-    % Now actually use th transitions to get the averaged flux
+    % Now actually use the transitions to get the averaged flux
     for state = 1:nbinx*nbiny
         % Recall, transitions is built so that element (i,j) is
         % the number of transitions from i to j
@@ -150,13 +146,12 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, nbins
 
         elseif stateRow == 1 && stateCol == 1
             % northwest corner %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+            
             localFlow = netFlow(stateRow:stateRow+1,stateCol:stateCol+1);
             flowVec = 1/2.*[trace(localFlow*xFluxMat(2:3,2:3)), trace(localFlow*yFluxMat(2:3,2:3))];
 
         elseif stateRow == 1 && stateCol == nbinx
             % northeast corner %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
             localFlow = netFlow(stateRow:stateRow+1,stateCol-1:stateCol);
             flowVec = 1/2.*[trace(localFlow*xFluxMat(2:3,1:2)), trace(localFlow*yFluxMat(2:3,1:2))];
 

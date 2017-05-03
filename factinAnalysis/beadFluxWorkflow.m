@@ -4,68 +4,68 @@
 
 macpath = '/Volumes/Storage/'; % Path to server on mac
 ubupath = '/mnt/llmStorage/'; % path to server on LLM ubuntu desktop
-datapath = 'Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/adding6pt2ulunspunskmuscmyo_5s/msd/';
+
+activeDataPath = 'Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/adding6pt2ulunspunskmuscmyo_5s/msd/';
 
 if ismac
-	path = [macpath datapath];
+	path = [macpath activeDataPath];
 elseif isunix
-	path = [ubupath datapath];
-else
-	error('Where is the data?')
-end
-
-%nbins = 50;%[25,15];
-dt = 5;
-rg_cutoff = [0,Inf]; % radius of gyration cutoffs (essentially none with [0,Inf])
-tc = 60; % only look at time < 2/3 tc for now
-
-
-[probMap, fluxField, xEdges,yEdges] = beadMotionFluxLoop(path,nbins,dt,rg_cutoff,tc);
-
-dx.pre = xEdges.pre(2) - xEdges.pre(1);
-dy.pre = yEdges.pre(2) - yEdges.pre(1);
-binCentersX.pre = xEdges.pre(1:end-1)+dx.pre/2;
-binCentersY.pre = yEdges.pre(1:end-1)+dy.pre/2;
-
-netCurl.pre = sum(sum(curl(binCentersX.pre, binCentersY.pre,...
-	fluxField.pre(:,:,1), fluxField.pre(:,:,2))))*dx.pre*dy.pre;
-
-figure,
-pcolor(xEdges.pre(1:end-1), yEdges.pre(1:end-1), probMap.pre)
-colorbar;
-hold on;
-
-quiver(binCentersX.pre, binCentersY.pre,...
-	fluxField.pre(:,:,1), fluxField.pre(:,:,2),'w')%, 'LineWidth', 1.5);
-xlabel('\Deltax (\mum)')
-ylabel('\Deltay (\mum)')
-title(['Active systems, net curl=', num2str(netCurl.pre)])
-
-% Do the control on a system without myosin
-datapath ='/Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/tc1_5s/msd/';
-
-if ismac
-	path = [macpath datapath];
-elseif isunix
-	path = [ubupath datapath];
+	path = [ubupath activeDataPath];
 else
 	error('Where is the data on this platform?')
 end
 
-%nbins = 25;
+dt = 5;
+rg_cutoff = [0,Inf]; % radius of gyration cutoffs (essentially none with [0,Inf])
+tc = 50; % only look at time < 2/3 tc for now
+dbin = 0.150; % Size of bins in um
+
+[xall, yall] = beadAggregator(path,rg_cutoff,tc);
+
+[probMap.active, fluxField.active, xEdges.active, yEdges.active] =...
+                probabilityFlux([xall, yall], dt, dbin, []);
+
+binCentersX.active = xEdges.active(1:end-1)+dbin/2;
+binCentersY.active = yEdges.active(1:end-1)+dbin/2;
+
+netCurl.active = sum(sum(curl(binCentersX.active, binCentersY.active,...
+	fluxField.active(:,:,1), fluxField.active(:,:,2))))*dbin^2;
+
+figure,
+pcolor(xEdges.active(1:end-1), yEdges.active(1:end-1), probMap.active)
+colorbar;
+hold on;
+
+quiver(binCentersX.active, binCentersY.active,...
+	fluxField.active(:,:,1), fluxField.active(:,:,2),'w')%, 'LineWidth', 1.5);
+xlabel('\Deltax (\mum)')
+ylabel('\Deltay (\mum)')
+title(['Active system, net curl=', num2str(netCurl.active)])
+
+% Do the control on a system without myosin
+ctrlDataPath ='/Danny/122311_5ulRED_2pt0uMact_phall_beads_nta_nochol_mc_1to300xlink_2/tc1_5s/msd/';
+
+if ismac
+	path = [macpath ctrlDataPath];
+elseif isunix
+	path = [ubupath ctrlDataPath];
+else
+	error('Where is the data on this platform?')
+end
+
 dt = 5;
 rg_cutoff = [0,Inf];
-tc = []; 
+tc = [];
 
+[xall, yall] = beadAggregator(path,rg_cutoff,tc);
 
-[probMap.ctrl, fluxField.ctrl, xEdges.ctrl,yEdges.ctrl] = beadMotionFluxLoop(path,nbins,dt,rg_cutoff,tc);
+[probMap.ctrl, fluxField.ctrl, xEdges.ctrl, yEdges.ctrl] =...
+                probabilityFlux([xall, yall], dt, dbin, []);
 
-dx.ctrl = xEdges.ctrl(2) - xEdges.ctrl(1);
-dy.ctrl = yEdges.ctrl(2) - yEdges.ctrl(1);
-binCentersX.ctrl = xEdges.ctrl(1:end-1)+dx.ctrl/2;
-binCentersY.ctrl = yEdges.ctrl(1:end-1)+dy.ctrl/2;
+binCentersX.ctrl = xEdges.ctrl(1:end-1)+dbin/2;
+binCentersY.ctrl = yEdges.ctrl(1:end-1)+dbin/2;
 
-netCurl.ctrl = sum(sum(curl(binCentersX.ctrl, binCentersY.ctrl, fluxField.ctrl(:,:,1), fluxField.ctrl(:,:,2))))*dx.ctrl*dy.ctrl;
+netCurl.ctrl = sum(sum(curl(binCentersX.ctrl, binCentersY.ctrl, fluxField.ctrl(:,:,1), fluxField.ctrl(:,:,2))))*dbin^2;
 
 figure,
 pcolor(xEdges.ctrl(1:end-1), yEdges.ctrl(1:end-1), probMap.ctrl)
