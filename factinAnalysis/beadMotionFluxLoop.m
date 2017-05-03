@@ -32,36 +32,16 @@ elseif isunix
     load([path 'Bead_Tracking/ddposum_files/individual_beads/correspondance_RG'])
 end
 
-% if isempty(tc)
-    
-% else
-%     %%% Pre tc %%%
-%     pre_number_of_frames = tc;
-%     probMap.pre=zeros(nbinx, nbiny);
-%     %%% Post tc %%%
-%     post_number_of_frames = number_of_frames - tc;
-%     probMap.post=[zeros(nbinx, nbiny);
-%     post_pointtracer=zeros(post_number_of_frames-1,1);
 
-%     % Make two structs, one for pre and one for post tc
-%     msd.pre=zeros(pre_number_of_frames-1,1);
-%     msdx.pre=zeros(pre_number_of_frames-1,1);
-%     msdy.pre=zeros(pre_number_of_frames-1,1);
-
-%     msd.post=zeros(post_number_of_frames-1,1);
-%     msdx.post=zeros(post_number_of_frames-1,1);
-%     msdy.post=zeros(post_number_of_frames-1,1);
-% end
-
-for i = 1:length(correspondance(:,1))
+for ii = 1:length(correspondance(:,1))
     
     if ispc
-        load([path 'Bead_Tracking\ddposum_files\individual_beads\bead_' num2str(i)]);
+        load([path 'Bead_Tracking\ddposum_files\individual_beads\bead_' num2str(ii)]);
     elseif isunix
-        load([path 'Bead_Tracking/ddposum_files/individual_beads/bead_' num2str(i)]);
+        load([path 'Bead_Tracking/ddposum_files/individual_beads/bead_' num2str(ii)]);
     end
     
-    if correspondance(i,4) < rg_cutoff(2) && correspondance(i,4)>rg_cutoff(1)
+    if correspondance(ii,4) < rg_cutoff(2) && correspondance(ii,4)>rg_cutoff(1)
         if isempty(tc)
             bsecx=(bsec(:,1)-bsec(1,1));
             x = bsecx - mean(bsecx);
@@ -87,7 +67,7 @@ for i = 1:length(correspondance(:,1))
             
             pre_bsecy=(pre(:,2)-pre(1,2));
             pre_y = pre_bsecy - mean(pre_bsecy);
-
+            
             [probMap.pre, fluxField.pre,xEdges.pre, yEdges.pre] = probabilityFlux([pre_x, pre_y], dt, nbins, []);
 
             %%% Post tc %%%
@@ -110,7 +90,7 @@ for i = 1:length(correspondance(:,1))
             [probMap.post, fluxField.post,xEdges.post, yEdges.post] = probabilityFlux([post_x, post_y], dt, nbins, []);
         end
     end
-    if mod(i,50) == 0
+    if mod(ii,50) == 0
         disp(['Finished computing msd for bead number ' num2str(i)])
     end
 end
