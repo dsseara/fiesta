@@ -46,7 +46,6 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, dbin,
         maxX = max(tseries(:,1));
         minY = min(tseries(:,2));
         maxY = max(tseries(:,2));
-
         xEdges = [minX:dbin:maxX+dbin]; % add dbin to end to make sure last edge
         yEdges = [minY:dbin:maxY+dbin]; % is past the max value
     end
@@ -170,11 +169,10 @@ function [probMap, fluxField,xEdges,yEdges] = probabilityFlux(tseries, dt, dbin,
         end
 
         if ~isempty(find(flowVec,1))
-            fluxField(stateRow, stateCol, :) = flowVec./probMap(stateRow,stateCol);
+            fluxField(stateRow, stateCol, :) = flowVec./totalTime;
         else
             fluxField(stateRow, stateCol, :) = flowVec;
         end
     end
-
+    
     probMap = probMap./totalTime;
-
